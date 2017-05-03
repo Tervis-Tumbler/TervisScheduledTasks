@@ -1,11 +1,13 @@
-﻿function Install-TervisScheduledTask {
+﻿#requires -module TervisApplication
+
+function Install-TervisScheduledTask {
     param (
         [Parameter(ParameterSetName="NoCredentialAndScheduledTaskActionObject")]
         [Parameter(ParameterSetName="NoCredentialAndScheduledTaskActionFile")]
         $ScheduledTaskUsername = "$env:USERDOMAIN\$env:USERNAME",
         
-        [Parameter(ParameterSetName="NoCredentialAndScheduledTaskActionObject",Mandatory)]
-        [Parameter(ParameterSetName="NoCredentialAndScheduledTaskActionFile",Mandatory)]     
+        [Parameter(ParameterSetName="NoCredentialAndScheduledTaskActionObject")]
+        [Parameter(ParameterSetName="NoCredentialAndScheduledTaskActionFile")]     
         $ScheduledTaskUserPassword,
         
         [Parameter(ParameterSetName="CredentialAndScheduledTaskActionObject",Mandatory)]
@@ -46,23 +48,31 @@
     if ($ScheduledTaskActionObject) {
         $ScheduledTaskAction = $ScheduledTaskActionObject
     } elseif ($ScheduledTaskActionExecuteFilePath) {
-        $ScheduledTaskAction = New-ScheduledTaskAction -Execute $ScheduledTaskActionExecuteFilePath `
-            -Argument $ScheduledTaskActionArgument `
-            -WorkingDirectory $ScheduledTaskActionWorkingDirectory
+        $ScheduledTaskActionOptions = @{
+            Execute = $ScheduledTaskActionExecuteFilePath
+            Argument = $ScheduledTaskActionArgument
+            WorkingDirectory = $ScheduledTaskActionWorkingDirectory
+        }
+        $ScheduledTaskActionArgs = Remove-HashtableKeysWithEmptyOrNullValues $ScheduledTaskActionOptions
+        $ScheduledTaskAction = New-ScheduledTaskAction @ScheduledTaskActionArgs
     }    
     $RepetitionInterval = $RepetitionIntervalName | Get-RepetitionInterval    
     $ScheduledTaskTrigger = $RepetitionInterval.ScheduledTaskTrigger
     $ScheduledTaskSettingsSet = New-ScheduledTaskSettingsSet
     $CimSession = New-CimSession -ComputerName $ComputerName
-    $Task = Register-ScheduledTask -TaskName $ScheduledTaskName `
-                    -TaskPath "\" `
-                    -Action $ScheduledTaskAction `
-                    -Trigger $ScheduledTaskTrigger `
-                    -User $ScheduledTaskUsername `
-                    -Password $ScheduledTaskUserPassword `
-                    -Settings $ScheduledTaskSettingsSet `
-                    -CimSession $CimSession `
-                    -Force
+    $RegisteredScheduledTaskOptions = @{
+        TaskName = $ScheduledTaskName
+        TaskPath = "\"
+        Action = $ScheduledTaskAction
+        Trigger = $ScheduledTaskTrigger
+        User = $ScheduledTaskUsername
+        Password = $ScheduledTaskUserPassword
+        Settings = $ScheduledTaskSettingsSet 
+        CimSession = $CimSession
+        Force = $true  
+    }
+    $RegisteredScheduledTaskArgs = Remove-HashtableKeysWithEmptyOrNullValues $RegisteredScheduledTaskOptions
+    $Task = Register-ScheduledTask @RegisteredScheduledTaskArgs
     if ($RepetitionInterval.TaskTriggersRepetitionDuration) {
         $task.Triggers.Repetition.Duration = $RepetitionInterval.TaskTriggersRepetitionDuration
     }
@@ -70,7 +80,7 @@
         $task.Triggers.Repetition.Interval = $RepetitionInterval.TaskTriggersRepetitionInterval
     }
     $Task.Triggers[0].ExecutionTimeLimit = "PT30M"
-    $task | Set-ScheduledTask -Password $ScheduledTaskUserPassword -User $ScheduledTaskUsername | Out-Null    
+    #$task | Set-ScheduledTask -Password $ScheduledTaskUserPassword -User $ScheduledTaskUsername | Out-Null    
     Remove-CimSession -CimSession $CimSession
 }
 
