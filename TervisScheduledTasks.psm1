@@ -147,3 +147,11 @@ $RepetitionIntervals = [PSCustomObject][Ordered]@{
     TaskTriggersRepetitionDuration = "PT18H"
     TaskTriggersRepetitionInterval = "PT3H"
 }
+
+function Invoke-ScheduledTasksProvision {
+    param (
+        $EnvironmentName
+    )
+    Invoke-ClusterApplicationProvision -ClusterApplicationName ScheduledTasks -EnvironmentName $EnvironmentName
+    $Nodes = Get-TervisClusterApplicationNode -ClusterApplicationName ScheduledTasks -EnvironmentName $EnvironmentName
+}
