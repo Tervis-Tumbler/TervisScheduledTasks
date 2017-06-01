@@ -156,5 +156,19 @@ function Invoke-ScheduledTasksProvision {
     $Nodes = Get-TervisClusterApplicationNode -ClusterApplicationName ScheduledTasks -EnvironmentName $EnvironmentName
     $Nodes | Push-TervisPowershellModulesToRemoteComputer
     $Nodes | Install-StoreManagerToStoresRdsPrivilegeScheduledTasks
-}
-
+    $APIKey = Get-PasswordStateAPIKey
+    $ScheduledTaskCredential = Get-PasswordstateCredential -PasswordID 259
+    $ScheduledTaskUserName = (($ScheduledTaskCredential).UserName.Split("@"))[0]
+    if (-NOT ((Get-ADGroupMember Privilege_InfrastructureScheduledTasksAdministrator -ErrorAction SilentlyContinue) -contains $ScheduledTaskUserName)) {
+        Add-ADGroupMember -Identity Privilege_InfrastructureScheduledTasksAdministrator -Members $ScheduledTaskUserName
+    }
+    foreach ($Node in $Nodes) {
+        Invoke-Command -ComputerName $Node.ComputerName -ScriptBlock {Enable-WSManCredSSP -Role Server}
+        Enable-WSManCredSSP -Role Client -DelegateComputer $Node.ComputerName
+        Invoke-Command `
+            -Authentication Credssp `
+            -ComputerName ($Node).ComputerName `
+            -Credential $ScheduledTaskCredential `
+            -ScriptBlock {Set-PasswordStateAPIKey -PasswordStateAPIKey $Using:APIKey}
+    }
+} 
