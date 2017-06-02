@@ -162,6 +162,8 @@ function Invoke-ScheduledTasksProvision {
     if (-NOT ((Get-ADGroupMember Privilege_InfrastructureScheduledTasksAdministrator -ErrorAction SilentlyContinue) -contains $ScheduledTaskUserName)) {
         Add-ADGroupMember -Identity Privilege_InfrastructureScheduledTasksAdministrator -Members $ScheduledTaskUserName
     }
+    $PathToPaylocityDataExport = Get-PathToPaylocityDataExport
+    $PaylocityDepartmentsWithNiceNamesJsonPath = Get-PaylocityDepartmentsWithNiceNamesJsonPath
     foreach ($Node in $Nodes) {
         Invoke-Command -ComputerName $Node.ComputerName -ScriptBlock {Enable-WSManCredSSP -Role Server}
         Enable-WSManCredSSP -Role Client -DelegateComputer $Node.ComputerName
@@ -169,6 +171,9 @@ function Invoke-ScheduledTasksProvision {
             -Authentication Credssp `
             -ComputerName ($Node).ComputerName `
             -Credential $ScheduledTaskCredential `
-            -ScriptBlock {Set-PasswordStateAPIKey -PasswordStateAPIKey $Using:APIKey}
+            -ScriptBlock {
+                Set-PasswordStateAPIKey -PasswordStateAPIKey $Using:APIKey
+                Install-TervisPaylocity -PathToPaylocityDataExport $Using:PathToPaylocityDataExport -PaylocityDepartmentsWithNiceNamesJsonPath $Using:PaylocityDepartmentsWithNiceNamesJsonPath
+            }
     }
 } 
