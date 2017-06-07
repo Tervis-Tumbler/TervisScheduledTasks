@@ -157,6 +157,7 @@ function Invoke-ScheduledTasksProvision {
     $Nodes | Push-TervisPowershellModulesToRemoteComputer
     $Nodes | Install-TervisPowershellModulesForScheduledTasks
     $Nodes | Install-StoresRDSRemoteDesktopPrivilegeScheduledTasks
+    $Nodes | Install-ExplorerFavoritesScheduledTasks
 } 
 
 function Install-TervisPowershellModulesForScheduledTasks {
