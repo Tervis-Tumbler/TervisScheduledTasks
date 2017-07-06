@@ -159,6 +159,7 @@ function Invoke-ScheduledTasksProvision {
     $Nodes | Install-StoresRDSRemoteDesktopPrivilegeScheduledTasks
     $Nodes | Install-ExplorerFavoritesScheduledTasks
     $Nodes | Install-RMSHQLogFileUtilizationScheduledTasks
+    $Nodes | Install-MoveSharedMailboxObjectsScheduledTasks
 } 
 
 function Install-TervisPowershellModulesForScheduledTasks {
