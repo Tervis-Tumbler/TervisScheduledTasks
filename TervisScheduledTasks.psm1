@@ -186,6 +186,7 @@ function Install-TervisPowershellModulesForScheduledTasks {
             -ScriptBlock {
                 Set-PasswordStateAPIKey -PasswordStateAPIKey $Using:APIKey
                 Install-TervisPaylocity -PathToPaylocityDataExport $Using:PathToPaylocityDataExport -PaylocityDepartmentsWithNiceNamesJsonPath $Using:PaylocityDepartmentsWithNiceNamesJsonPath
+                Install-TervisMSOnline -ExchangeOnlineCredential $Using:ScheduledTaskCredential
             }
     }
 }
