@@ -160,6 +160,7 @@ function Invoke-ScheduledTasksProvision {
     $Nodes | Install-ExplorerFavoritesScheduledTasks
     $Nodes | Install-RMSHQLogFileUtilizationScheduledTasks
     $Nodes | Install-MoveSharedMailboxObjectsScheduledTasks
+    $Nodes | Install-InvokeSyncGravatarPhotosToADUsersInAD
 } 
 
 function Install-TervisPowershellModulesForScheduledTasks {
