@@ -152,8 +152,8 @@ function Invoke-ScheduledTasksProvision {
     param (
         $EnvironmentName
     )
-    Invoke-ClusterApplicationProvision -ClusterApplicationName ScheduledTasks -EnvironmentName $EnvironmentName
-    $Nodes = Get-TervisClusterApplicationNode -ClusterApplicationName ScheduledTasks -EnvironmentName $EnvironmentName
+    Invoke-ApplicationProvision -ApplicationName ScheduledTasks -EnvironmentName $EnvironmentName
+    $Nodes = Get-TervisApplicationNode -ApplicationName ScheduledTasks -EnvironmentName $EnvironmentName
     $Nodes | Push-TervisPowershellModulesToRemoteComputer
     $Nodes | Install-TervisPowershellModulesForScheduledTasks
     $Nodes | Install-StoresRDSRemoteDesktopPrivilegeScheduledTasks
