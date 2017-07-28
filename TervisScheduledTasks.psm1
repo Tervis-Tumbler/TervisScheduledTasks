@@ -165,6 +165,7 @@ function Invoke-ScheduledTasksProvision {
     $Nodes | Install-DisableInactiveADUsersScheduledTask
     $Nodes | Install-RemoveInactiveADComputersScheduledTask
     $Nodes | Install-RemoveInactiveADUsersScheduledTask
+    $Nodes | Install-MoveMESUsersToCorrectOUScheduledTask
 } 
 
 function Install-TervisPowershellModulesForScheduledTasks {
