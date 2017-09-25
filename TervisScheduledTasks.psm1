@@ -195,6 +195,7 @@ function Install-TervisPowershellModulesForScheduledTasks {
                 Install-TervisPaylocity -PathToPaylocityDataExport $Using:PathToPaylocityDataExport -PaylocityDepartmentsWithNiceNamesJsonPath $Using:PaylocityDepartmentsWithNiceNamesJsonPath
                 Install-TervisMSOnline -ExchangeOnlineCredential $Using:ScheduledTaskCredential
                 Install-TervisTechnicalServices
+                Install-TervisAzure
             }
     }
 }
