@@ -124,6 +124,10 @@ $RepetitionIntervals = [PSCustomObject][Ordered]@{
     ScheduledTaskTrigger = $(New-ScheduledTaskTrigger -Daily -At 3am)
 },
 [PSCustomObject][Ordered]@{
+    Name = "EveryDayAt6am"
+    ScheduledTaskTrigger = $(New-ScheduledTaskTrigger -Daily -At 6am)
+},
+[PSCustomObject][Ordered]@{
     Name = "OnceAWeekTuesdayMorning"
     ScheduledTaskTrigger = $(New-ScheduledTaskTrigger -Weekly -DaysOfWeek Tuesday -At 8am)
 },
@@ -174,6 +178,7 @@ function Invoke-ScheduledTasksProvision {
     $Nodes | Install-MoveMESUsersToCorrectOUScheduledTask
     $Nodes | Install-SendTervisInactivityNotification
     $Nodes | Install-UpdateExternalServicesInDNS
+    $Nodes | Install-InvokeEBSWebADIServer2016CompatibilityHackScheduledTask
 } 
 
 function Install-TervisPowershellModulesForScheduledTasks {
