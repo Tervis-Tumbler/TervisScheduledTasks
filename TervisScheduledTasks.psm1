@@ -2,35 +2,23 @@
 
 function Install-TervisScheduledTask {
     param (
-        [Parameter(ParameterSetName="NoCredentialAndAction")]
-        [Parameter(ParameterSetName="NoCredentialAndActionParameter")]
-        $User = "$env:USERDOMAIN\$env:USERNAME",
-        
-        [Parameter(ParameterSetName="NoCredentialAndAction")]
-        [Parameter(ParameterSetName="NoCredentialAndActionParameter")]     
-        $Password,
-        
-        [Parameter(ParameterSetName="CredentialAndAction",Mandatory)]
-        [Parameter(ParameterSetName="CredentialAndActionParameter",Mandatory)]
+        [Parameter(ParameterSetName="CredentialAndActionObject",Mandatory)]
+        [Parameter(ParameterSetName="CredentialAndNewActionParameters",Mandatory)]
         $Credential,
         
         [Parameter(Mandatory)]
         $TaskName,
         
-        [Parameter(ParameterSetName="CredentialAndAction",Mandatory)]
-        [Parameter(ParameterSetName="NoCredentialAndAction",Mandatory)]
+        [Parameter(ParameterSetName="CredentialAndActionObject",Mandatory)]
         $Action,
         
-        [Parameter(ParameterSetName="CredentialAndActionParameter",Mandatory)]        
-        [Parameter(ParameterSetName="NoCredentialAndActionParameter",Mandatory)]
+        [Parameter(ParameterSetName="CredentialAndNewActionParameters",Mandatory)]
         $Execute,
         
-        [Parameter(ParameterSetName="CredentialAndActionParameter")]        
-        [Parameter(ParameterSetName="NoCredentialAndActionParameter")]   
+        [Parameter(ParameterSetName="CredentialAndNewActionParameters")]
         $Argument,
         
-        [Parameter(ParameterSetName="CredentialAndActionParameter")]        
-        [Parameter(ParameterSetName="NoCredentialAndActionParameter")]     
+        [Parameter(ParameterSetName="CredentialAndNewActionParameters")]
         $WorkingDirectory,
 
         [Parameter(Mandatory)]
@@ -40,45 +28,42 @@ function Install-TervisScheduledTask {
 
         [Parameter(Mandatory)]$ComputerName
     )
-    if ($Credential) {
-        $User = $Credential.UserName
-        $Password = $Credential.GetNetworkCredential().password
+
+    if (-Not $Action) {
+        $ActionParameters = $PSBoundParameters | 
+            ConvertFrom-PSBoundParameters -Property Execute,Argument,WorkingDirectory -AsHashTable
+
+        $Action = New-ScheduledTaskAction @ActionParameters
     }
-    $ActionObject = if ($Action) {
-        $Action
-    } else {
-        $ActionParameters = @{
-            Execute = $Execute
-            Argument = $Argument
-            WorkingDirectory = $WorkingDirectory
-        } | Remove-HashtableKeysWithEmptyOrNullValues
-        New-ScheduledTaskAction @ActionParameters
-    }    
-    $RepetitionInterval = $RepetitionIntervalName | Get-RepetitionInterval    
-    $Trigger = $RepetitionInterval.ScheduledTaskTrigger 
-    $CimSession = New-CimSession -ComputerName $ComputerName
+
+    $RepetitionInterval = $RepetitionIntervalName | Get-RepetitionInterval
+
     $RegisteredScheduledTaskParameters = @{
         TaskName = $TaskName
         TaskPath = "\"
-        Action = $ActionObject
-        Trigger = $Trigger
-        User = $User
-        Password = $Password
+        Action = $Action
+        Trigger = $RepetitionInterval.ScheduledTaskTrigger
+        User = $Credential.UserName
+        Password = $Credential.GetNetworkCredential().password
         Settings = New-ScheduledTaskSettingsSet
-        CimSession = $CimSession
+        CimSession = New-CimSession -ComputerName $ComputerName
         Force = $true  
     } | Remove-HashtableKeysWithEmptyOrNullValues
+
     $Task = Register-ScheduledTask @RegisteredScheduledTaskParameters
+
     if ($RepetitionInterval.TaskTriggersRepetitionDuration) {
         $task.Triggers.Repetition.Duration = $RepetitionInterval.TaskTriggersRepetitionDuration
     }
     if ($RepetitionInterval.TaskTriggersRepetitionInterval) { 
         $task.Triggers.Repetition.Interval = $RepetitionInterval.TaskTriggersRepetitionInterval
     }
+
     $SetScheduledTaskParameters = @{
-        User = $User
-        Password = $Password
+        User = $Credential.UserName
+        Password = $Credential.GetNetworkCredential().password
     } | Remove-HashtableKeysWithEmptyOrNullValues
+
     $Task | Set-ScheduledTask @SetScheduledTaskParameters | Out-Null    
     Remove-CimSession -CimSession $CimSession
 }
@@ -100,7 +85,7 @@ function Get-RepetitionInterval {
         [Parameter(ValueFromPipeline)]$Name
     )
     $RepetitionIntervals | 
-    where Name -EQ $Name
+    where {-Not $Name -or $_.Name -EQ $Name}
 }
 
 $RepetitionIntervals = [PSCustomObject][Ordered]@{
@@ -156,6 +141,12 @@ $RepetitionIntervals = [PSCustomObject][Ordered]@{
     ScheduledTaskTrigger = $(New-ScheduledTaskTrigger -Daily -At 5am)
     TaskTriggersRepetitionDuration = "PT18H"
     TaskTriggersRepetitionInterval = "PT3H"
+},
+[PSCustomObject][Ordered]@{
+    Name = "EveryDayAt7am3pm11pm"
+    ScheduledTaskTrigger = $(New-ScheduledTaskTrigger -Daily -At 7am),
+    $(New-ScheduledTaskTrigger -Daily -At 3pm),
+    $(New-ScheduledTaskTrigger -Daily -At 11pm)
 }
 
 function Invoke-ScheduledTasksProvision {
