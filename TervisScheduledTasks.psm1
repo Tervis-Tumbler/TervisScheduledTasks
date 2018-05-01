@@ -65,7 +65,7 @@ function Install-TervisScheduledTask {
     } | Remove-HashtableKeysWithEmptyOrNullValues
 
     $Task | Set-ScheduledTask @SetScheduledTaskParameters | Out-Null    
-    Remove-CimSession -CimSession $CimSession
+    Remove-CimSession -CimSession $RegisteredScheduledTaskParameters.CimSession
 }
 
 function Uninstall-TervisScheduledTask {
