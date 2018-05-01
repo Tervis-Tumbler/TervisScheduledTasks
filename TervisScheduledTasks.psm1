@@ -170,6 +170,7 @@ function Invoke-ScheduledTasksProvision {
     $Nodes | Install-SendTervisInactivityNotification
     $Nodes | Install-UpdateExternalServicesInDNS
     $Nodes | Install-InvokeEBSWebADIServer2016CompatibilityHackScheduledTask
+    $Nodes | Invoke-InstallTervisSAMonitoringApplication
 } 
 
 function Install-TervisPowershellModulesForScheduledTasks {
