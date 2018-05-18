@@ -161,16 +161,9 @@ function Invoke-ScheduledTasksProvision {
     $Nodes | Install-ExplorerFavoritesScheduledTasks
     $Nodes | Install-RMSHQLogFileUtilizationScheduledTasks
     $Nodes | Install-MoveSharedMailboxObjectsScheduledTasks
-    $Nodes | Install-InvokeSyncGravatarPhotosToADUsersInAD
-    $Nodes | Install-DisableInactiveADComputersScheduledTask
-    $Nodes | Install-DisableInactiveADUsersScheduledTask
-    $Nodes | Install-RemoveInactiveADComputersScheduledTask
-    $Nodes | Install-RemoveInactiveADUsersScheduledTask
-    $Nodes | Install-MoveMESUsersToCorrectOUScheduledTask
-    $Nodes | Install-SendTervisInactivityNotification
-    $Nodes | Install-UpdateExternalServicesInDNS
+    $Nodes | Install-TervisActiveDirectoryCleanup
     $Nodes | Install-InvokeEBSWebADIServer2016CompatibilityHackScheduledTask
-    $Nodes | Invoke-InstallTervisSAMonitoringApplication
+    $Nodes | Install-TervisSOAMonitoringApplication
 } 
 
 function Install-TervisPowershellModulesForScheduledTasks {
