@@ -147,6 +147,12 @@ $RepetitionIntervals = [PSCustomObject][Ordered]@{
     ScheduledTaskTrigger = $(New-ScheduledTaskTrigger -Daily -At 7am),
     $(New-ScheduledTaskTrigger -Daily -At 3pm),
     $(New-ScheduledTaskTrigger -Daily -At 11pm)
+},
+[PSCustomObject][Ordered]@{
+    Name = "Every12HoursEveryDay"
+    ScheduledTaskTrigger = $(New-ScheduledTaskTrigger -Daily -At 12am)
+    TaskTriggersRepetitionDuration = "P1D"
+    TaskTriggersRepetitionInterval = "PT12H"
 }
 
 function Invoke-ScheduledTasksProvision {
