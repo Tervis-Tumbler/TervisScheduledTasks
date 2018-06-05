@@ -171,7 +171,6 @@ function Install-TervisPowershellModulesForScheduledTasks {
         [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
     )
     Begin {
-        $APIKey = Get-PasswordStateAPIKey
         $ScheduledTaskCredential = Get-PasswordstateCredential -PasswordID 259
         $ScheduledTaskUserName = (($ScheduledTaskCredential).UserName.Split("@"))[0]
         if (-NOT ((Get-ADGroupMember Privilege_InfrastructureScheduledTasksAdministrator -ErrorAction SilentlyContinue) -contains $ScheduledTaskUserName)) {
@@ -188,7 +187,6 @@ function Install-TervisPowershellModulesForScheduledTasks {
             -ComputerName $ComputerName `
             -Credential $ScheduledTaskCredential `
             -ScriptBlock {
-                Set-PasswordStateAPIKey -PasswordStateAPIKey $Using:APIKey
                 Install-TervisPaylocity -PathToPaylocityDataExport $Using:PathToPaylocityDataExport -PaylocityDepartmentsWithNiceNamesJsonPath $Using:PaylocityDepartmentsWithNiceNamesJsonPath
                 Install-TervisMSOnline -ExchangeOnlineCredential $Using:ScheduledTaskCredential
                 Install-TervisTechnicalServices
