@@ -111,7 +111,7 @@ function Install-TervisPowershellModulesForScheduledTasks {
         [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
     )
     Begin {
-        $ScheduledTaskCredential = Get-PasswordstateCredential -PasswordID 259
+        $ScheduledTaskCredential = Get-PasswordstatePassword -AsCredential -ID 259
         $ScheduledTaskUserName = (($ScheduledTaskCredential).UserName.Split("@"))[0]
         if (-NOT ((Get-ADGroupMember Privilege_InfrastructureScheduledTasksAdministrator -ErrorAction SilentlyContinue) -contains $ScheduledTaskUserName)) {
             Add-ADGroupMember -Identity Privilege_InfrastructureScheduledTasksAdministrator -Members $ScheduledTaskUserName
