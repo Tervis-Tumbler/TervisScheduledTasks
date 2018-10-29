@@ -99,7 +99,7 @@ function Invoke-ScheduledTasksProvision {
     $Nodes | Install-TervisPowershellModulesForScheduledTasks
     $Nodes | Install-StoresRDSRemoteDesktopPrivilegeScheduledTasks
     $Nodes | Install-ExplorerFavoritesScheduledTasks
-    $Nodes | Install-RMSHQLogFileUtilizationScheduledTasks
+    $Nodes | Install-RMSHQLogFileMonitorPowershellApplication
     $Nodes | Install-MoveSharedMailboxObjectsScheduledTasks
     $Nodes | Install-TervisActiveDirectoryCleanup
     $Nodes | Install-InvokeEBSWebADIServer2016CompatibilityHackScheduledTask
@@ -143,7 +143,7 @@ function Install-RMSHQLogFileMonitorPowershellApplication {
     Install-PowerShellApplication -ComputerName $ComputerName `
         -EnvironmentName "Infrastructure" `
         -ModuleName "TervisBackupandRecovery" `
-        -TervisModuleDependencies PasswordstatePowershell,TervisMicrosoft.PowerShell.Utility,TervisMailMessage,InvokeSQL,TervisBackupandRecovery `
+        -TervisModuleDependencies PasswordstatePowershell,TervisMicrosoft.PowerShell.Utility,TervisMailMessage,InvokeSQL `
         -ScheduledTasksCredential $ScheduledTaskCredential `
         -ScheduledTaskName "RMSHQLogFileUtilizationMonitor" `
         -RepetitionIntervalName "EverWorkdayDuringTheDayEvery15Minutes" `
