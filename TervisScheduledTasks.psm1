@@ -134,3 +134,20 @@ function Install-TervisPowershellModulesForScheduledTasks {
             }
     }
 }
+
+function Install-RMSHQLogFileMonitorPowershellApplication {
+	param (
+		$ComputerName
+	)
+    $ScheduledTaskCredential = New-Object System.Management.Automation.PSCredential (Get-PasswordstatePassword -AsCredential -ID 259)
+    Install-PowerShellApplication -ComputerName $ComputerName `
+        -EnvironmentName "Infrastructure" `
+        -ModuleName "TervisBackupandRecovery" `
+        -TervisModuleDependencies PasswordstatePowershell,TervisMicrosoft.PowerShell.Utility,TervisMailMessage,InvokeSQL,TervisBackupandRecovery `
+        -ScheduledTasksCredential $ScheduledTaskCredential `
+        -ScheduledTaskName "RMSHQLogFileUtilizationMonitor" `
+        -RepetitionIntervalName "EverWorkdayDuringTheDayEvery15Minutes" `
+        -CommandString @"
+Test-RMSHQLogFileUtilization
+"@
+}
