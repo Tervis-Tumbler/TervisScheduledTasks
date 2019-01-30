@@ -27,46 +27,48 @@ function Install-TervisScheduledTask {
         [ValidateScript({ $_ | Get-RepetitionInterval })]
         $RepetitionIntervalName,
 
-        [Parameter(Mandatory)]$ComputerName
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
     )
 
-    if (-Not $Action) {
-        $ActionParameters = $PSBoundParameters | 
-            ConvertFrom-PSBoundParameters -Property Execute,Argument,WorkingDirectory -AsHashTable
-
-        $Action = New-ScheduledTaskAction @ActionParameters
+    process {
+        if (-Not $Action) {
+            $ActionParameters = $PSBoundParameters | 
+                ConvertFrom-PSBoundParameters -Property Execute,Argument,WorkingDirectory -AsHashTable
+    
+            $Action = New-ScheduledTaskAction @ActionParameters
+        }
+    
+        $RepetitionInterval = $RepetitionIntervalName | Get-RepetitionInterval
+    
+        $RegisteredScheduledTaskParameters = @{
+            TaskName = $TaskName
+            TaskPath = "\"
+            Action = $Action
+            Trigger = $RepetitionInterval.ScheduledTaskTrigger
+            User = $Credential.UserName
+            Password = $Credential.GetNetworkCredential().password
+            Settings = New-ScheduledTaskSettingsSet
+            CimSession = New-CimSession -ComputerName $ComputerName
+            Force = $true  
+        } | Remove-HashtableKeysWithEmptyOrNullValues
+    
+        $Task = Register-ScheduledTask @RegisteredScheduledTaskParameters
+    
+        if ($RepetitionInterval.TaskTriggersRepetitionDuration) {
+            $task.Triggers.Repetition.Duration = $RepetitionInterval.TaskTriggersRepetitionDuration
+        }
+        if ($RepetitionInterval.TaskTriggersRepetitionInterval) { 
+            $task.Triggers.Repetition.Interval = $RepetitionInterval.TaskTriggersRepetitionInterval
+        }
+    
+        $SetScheduledTaskParameters = @{
+            User = $Credential.UserName
+            Password = $Credential.GetNetworkCredential().password
+        } | Remove-HashtableKeysWithEmptyOrNullValues
+    
+        $Task | Set-ScheduledTask @SetScheduledTaskParameters | Out-Null    
+        Remove-CimSession -CimSession $RegisteredScheduledTaskParameters.CimSession
     }
-
-    $RepetitionInterval = $RepetitionIntervalName | Get-RepetitionInterval
-
-    $RegisteredScheduledTaskParameters = @{
-        TaskName = $TaskName
-        TaskPath = "\"
-        Action = $Action
-        Trigger = $RepetitionInterval.ScheduledTaskTrigger
-        User = $Credential.UserName
-        Password = $Credential.GetNetworkCredential().password
-        Settings = New-ScheduledTaskSettingsSet
-        CimSession = New-CimSession -ComputerName $ComputerName
-        Force = $true  
-    } | Remove-HashtableKeysWithEmptyOrNullValues
-
-    $Task = Register-ScheduledTask @RegisteredScheduledTaskParameters
-
-    if ($RepetitionInterval.TaskTriggersRepetitionDuration) {
-        $task.Triggers.Repetition.Duration = $RepetitionInterval.TaskTriggersRepetitionDuration
-    }
-    if ($RepetitionInterval.TaskTriggersRepetitionInterval) { 
-        $task.Triggers.Repetition.Interval = $RepetitionInterval.TaskTriggersRepetitionInterval
-    }
-
-    $SetScheduledTaskParameters = @{
-        User = $Credential.UserName
-        Password = $Credential.GetNetworkCredential().password
-    } | Remove-HashtableKeysWithEmptyOrNullValues
-
-    $Task | Set-ScheduledTask @SetScheduledTaskParameters | Out-Null    
-    Remove-CimSession -CimSession $RegisteredScheduledTaskParameters.CimSession
 }
 
 function Uninstall-TervisScheduledTask {
