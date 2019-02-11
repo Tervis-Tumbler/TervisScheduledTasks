@@ -27,7 +27,9 @@ function Install-TervisScheduledTask {
         [ValidateScript({ $_ | Get-RepetitionInterval })]
         $RepetitionIntervalName,
 
-        [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName
+        [Parameter(Mandatory,ValueFromPipelineByPropertyName)]$ComputerName,
+
+        [switch]$RunOnlyWhenUserIsLoggedOn
     )
 
     process {
@@ -67,6 +69,13 @@ function Install-TervisScheduledTask {
         } | Remove-HashtableKeysWithEmptyOrNullValues
     
         $Task | Set-ScheduledTask @SetScheduledTaskParameters | Out-Null    
+
+        if ($LogonTypeInteractive) {
+            $TaskPrincipal = $Task.Principal
+            $TaskPrincipal.LogonType = "Interactive"
+            Set-ScheduledTask -Principal $TaskPrincipal -CimSession $RegisteredScheduledTaskParameters.CimSession -TaskName $RegisteredScheduledTaskParameters.TaskName | Out-Null
+        }
+
         Remove-CimSession -CimSession $RegisteredScheduledTaskParameters.CimSession
     }
 }
